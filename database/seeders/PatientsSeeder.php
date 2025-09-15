@@ -18,15 +18,21 @@ class PatientsSeeder extends Seeder
 
         for ($i = 0; $i < 50; $i++) {
             $gender = rand(0, 1) ? 'male' : 'female';
-            $name = $syrianNames[$gender][array_rand($syrianNames[$gender])];
+            $names = explode(' ', $syrianNames[$gender][array_rand($syrianNames[$gender])]);
             
             Patient::create([
-                'name' => $name,
-                'phone' => '0943' . rand(100000, 999999),
-                'email' => null,
-                'birth_date' => fake()->dateTimeBetween('-80 years', '-1 year')->format('Y-m-d'),
+                'patient_code' => 'P' . str_pad($i + 1, 4, '0', STR_PAD_LEFT),
+                'first_name' => $names[0],
+                'father_name' => $names[1] ?? 'محمد',
+                'mother_name' => 'فاطمة',
+                'last_name' => 'الرقاوي',
                 'gender' => $gender,
-                'address' => $areas[array_rand($areas)] . '، الرقة، سوريا'
+                'date_of_birth' => fake()->dateTimeBetween('-80 years', '-1 year')->format('Y-m-d'),
+                'address' => $areas[array_rand($areas)] . '، الرقة، سوريا',
+                'phone' => '0943' . rand(100000, 999999),
+                'host_idp' => ['Host', 'IDP', 'Non_IDP'][rand(0, 2)],
+                'disability' => rand(0, 1) ? true : false,
+                'referred' => rand(0, 1) ? true : false
             ]);
         }
     }

@@ -8,17 +8,56 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Patient extends Model
 {
     protected $fillable = [
-        'name',
-        'phone',
-        'email',
-        'birth_date',
+        'patient_code',
+        'first_name',
+        'father_name',
+        'mother_name',
+        'last_name',
         'gender',
-        'address'
+        'date_of_birth',
+        'document_type',
+        'document_number',
+        'address',
+        'education',
+        'referred',
+        'fromreferred',
+        'whyreferred',
+        'familycount',
+        'phone',
+        'whatsapp',
+        'mobile',
+        'z_score',
+        'mwak',
+        'blood_type',
+        'height',
+        'weight',
+        'allergies',
+        'current_medications',
+        'smoking_status',
+        'statusoninter',
+        'host_idp',
+        'disability',
+        'disability_type',
+        'additional_notes',
+        'emergency_contact',
+        'emergency_phone',
+        'echo',
+        'age',
+        'agemonth'
     ];
 
     protected $casts = [
-        'birth_date' => 'date'
+        'date_of_birth' => 'date',
+        'referred' => 'boolean',
+        'disability' => 'boolean',
+        'height' => 'decimal:2',
+        'weight' => 'decimal:2'
     ];
+
+    public function getFullNameAttribute()
+    {
+        return $this->first_name . ' ' . $this->father_name . ' ' . $this->mother_name . ' ' . $this->last_name;
+    }
 
     public function cards(): HasMany
     {
@@ -33,5 +72,20 @@ class Patient extends Model
     public function medicineDatas(): HasMany
     {
         return $this->hasMany(MedicineData::class);
+    }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(Visit::class);
+    }
+
+    public function radioDatas(): HasMany
+    {
+        return $this->hasMany(RadioData::class);
+    }
+
+    public function testDatas(): HasMany
+    {
+        return $this->hasMany(TestData::class);
     }
 }

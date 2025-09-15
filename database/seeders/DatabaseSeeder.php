@@ -13,9 +13,12 @@ class DatabaseSeeder extends Seeder
             PatientsSeeder::class,
             DiagnosesSeeder::class,
             MedicinesSeeder::class,
+            RadiologySeeder::class,
+            TestSeeder::class,
             CardsSeeder::class,
             DiagnosisDataSeeder::class,
             MedicineDataSeeder::class,
+            VisitSeeder::class,
             BackupsSeeder::class,
         ]);
     }
