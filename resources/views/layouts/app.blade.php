@@ -37,7 +37,7 @@
                                 </button>
                             </form>
                         @else
-                            <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-gray-900">تسجيل الدخول</a>
+                            <a href="" class="text-sm text-gray-700 hover:text-gray-900">تسجيل الدخول</a>
                             @if (Route::has('register'))
                                 <a href="{{ route('register') }}" class="text-sm text-gray-700 hover:text-gray-900">إنشاء حساب</a>
                             @endif
