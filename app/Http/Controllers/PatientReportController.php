@@ -26,24 +26,18 @@ class PatientReportController extends Controller
     {
         $spreadsheet = new Spreadsheet();
         
-        // الشيت الأساسي - معلومات المرضى
+        // الشيت الأساسي - معلومات المرضى الأساسية فقط
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('المرضى الأساسية');
+        $sheet->setTitle('البيانات الأساسية');
         
-        $headers = ['كود المريض', 'الاسم الكامل', 'الجنس', 'العمر(بالسنوات)', 'العمر(الاشهر)', 'نازح/مقيم', 'العنوان', 'الاعاقة', 'إحالة من منشأة أخرى؟', 'التصنيف الرئيسي للأمراض', 'التشخيص', 'اذا أخرى, الرجاء التحديد؟', 'نوع الأشعة', 'النوع', 'نوع التحاليل المخبرية', 'الأدوية', 'حالة التخريج', 'إذا أحيل أو توفى فما السبب؟', 'إيكو', 'قياس زد سكور', 'قياس مواك', 'ملاحظات'];
-        $sheet->fromArray($headers, null, 'A1');
+        $basicHeaders = ['كود المريض', 'الاسم الكامل', 'الجنس', 'العمر(بالسنوات)', 'العمر(الاشهر)', 'نازح/مقيم', 'العنوان', 'الاعاقة', 'إحالة من منشأة أخرى؟', 'الهاتف', 'رقم الهوية', 'فصيلة الدم'];
+        $sheet->fromArray($basicHeaders, null, 'A1');
         
-        $patients = Patient::with(['diagnosisDatas.clinic', 'diagnosisDatas.diagnosis', 'medicineDatas', 'visits', 'radioDatas.radiology', 'testDatas.test'])->get();
+        $patients = Patient::all();
         $row = 2;
         foreach ($patients as $patient) {
             $age = $patient->age ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->age : 0);
             $ageMonths = $patient->agemonth ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->diffInMonths(now()) : 0);
-            
-            $diagnosisData = $patient->diagnosisDatas->first();
-            $medicineData = $patient->medicineDatas->pluck('medicines')->implode(', ');
-            $visit = $patient->visits->first();
-            $radioData = $patient->radioDatas->first();
-            $testData = $patient->testDatas->first();
             
             $sheet->fromArray([
                 $patient->patient_code,
@@ -55,39 +49,36 @@ class PatientReportController extends Controller
                 $patient->address,
                 $patient->disability ? ($patient->disability_type ?: 'يوجد') : 'لا يوجد',
                 $patient->referred ? 'نعم' : 'لا',
-                $diagnosisData ? $diagnosisData->diagnosis->name : '',
-                $diagnosisData ? $diagnosisData->suboption : '',
-                '',
-                $radioData ? $radioData->radiology->name : '',
-                '',
-                $testData ? $testData->test->name : '',
-                $medicineData,
-                $visit ? $visit->status : '',
-                '',
-                $patient->echo ?: ($diagnosisData ? $diagnosisData->echo : ''),
-                $patient->z_score ?: ($diagnosisData ? $diagnosisData->z_score : ''),
-                $patient->mwak ?: ($diagnosisData ? $diagnosisData->mwak : ''),
-                $patient->additional_notes
+                $patient->phone,
+                $patient->document_number,
+                $patient->blood_type
             ], null, 'A' . $row);
             $row++;
         }
 
-        // إنشاء شيتات للأقسام المختلفة
+        // إنشاء شيت منفصل لكل قسم مع البيانات الطبية الكاملة
         $clinics = \App\Models\Clinic::all();
+        $clinicHeaders = ['كود المريض', 'الاسم الكامل', 'الجنس', 'العمر(بالسنوات)', 'العمر(الاشهر)', 'نازح/مقيم', 'العنوان', 'الاعاقة', 'إحالة من منشأة أخرى؟', 'التصنيف الرئيسي للأمراض', 'التشخيص', 'اذا أخرى, الرجاء التحديد؟', 'نوع الأشعة', 'النوع', 'نوع التحاليل المخبرية', 'الأدوية', 'حالة التخريج', 'إذا أحيل أو توفى فما السبب؟', 'إيكو', 'قياس زد سكور', 'قياس مواك', 'ملاحظات'];
+        
         foreach ($clinics as $clinic) {
             $clinicSheet = $spreadsheet->createSheet();
             $clinicSheet->setTitle($clinic->name);
-            $clinicSheet->fromArray($headers, null, 'A1');
+            $clinicSheet->fromArray($clinicHeaders, null, 'A1');
             
-            $clinicPatients = DiagnosisData::with(['patient', 'diagnosis'])
+            $clinicPatients = DiagnosisData::with(['patient.medicineDatas', 'patient.visits', 'patient.radioDatas.radiology', 'patient.testDatas.test', 'diagnosis'])
                 ->where('clinic_id', $clinic->id)
                 ->get();
             
             $row = 2;
             foreach ($clinicPatients as $data) {
                 $patient = $data->patient;
-                $age = $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->age : 0;
-                $ageMonths = $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->diffInMonths(now()) : 0;
+                $age = $patient->age ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->age : 0);
+                $ageMonths = $patient->agemonth ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->diffInMonths(now()) : 0);
+                
+                $medicineData = $patient->medicineDatas->pluck('medicines')->implode(', ');
+                $visit = $patient->visits->first();
+                $radioData = $patient->radioDatas->first();
+                $testData = $patient->testDatas->first();
                 
                 $clinicSheet->fromArray([
                     $patient->patient_code,
@@ -102,15 +93,15 @@ class PatientReportController extends Controller
                     $data->diagnosis->name,
                     $data->suboption,
                     '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    $data->echo,
-                    $data->z_score,
-                    $data->mwak,
+                    $radioData ? $radioData->radiology->name : '',
+                    $radioData ? $radioData->suboption : '',
+                    $testData ? $testData->test->name : '',
+                    $medicineData,
+                    $visit ? $visit->status : '',
+                    $visit && $visit->status == 'transferred' ? 'تحويل طبي' : '',
+                    $data->echo ?: $patient->echo,
+                    $data->z_score ?: $patient->z_score,
+                    $data->mwak ?: $patient->mwak,
                     $patient->additional_notes
                 ], null, 'A' . $row);
                 $row++;
