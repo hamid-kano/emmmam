@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DiagnosisData extends Model
 {
+    protected $table = 'diagnosis_datas';
+    
     protected $fillable = [
         'patient_id',
         'clinic_id',
