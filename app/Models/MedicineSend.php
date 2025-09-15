@@ -5,15 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class MedicineData extends Model
+class MedicineSend extends Model
 {
-    protected $table = 'medicine_datas';
-    
     protected $fillable = [
         'patient_id',
-        'request_id',
+        'medicine_data_id',
+        'clinic_id',
         'namedataentry',
-        'medicines'
+        'medicine'
     ];
 
     public function patient(): BelongsTo
@@ -21,8 +20,13 @@ class MedicineData extends Model
         return $this->belongsTo(Patient::class);
     }
 
-    public function medicineSends(): HasMany
+    public function medicineData(): BelongsTo
     {
-        return $this->hasMany(MedicineSend::class);
+        return $this->belongsTo(MedicineData::class);
+    }
+
+    public function clinic(): BelongsTo
+    {
+        return $this->belongsTo(Clinic::class);
     }
 }

@@ -38,4 +38,24 @@ class Clinic extends Model
     {
         return $this->hasMany(DiagnosisData::class);
     }
+
+    public function nurses(): HasMany
+    {
+        return $this->hasMany(Nurse::class);
+    }
+
+    public function medicineSends(): HasMany
+    {
+        return $this->hasMany(MedicineSend::class);
+    }
+
+    public function transfersFrom(): HasMany
+    {
+        return $this->hasMany(Transfer::class, 'from_clinic_id');
+    }
+
+    public function transfersTo(): HasMany
+    {
+        return $this->hasMany(Transfer::class, 'to_clinic_id');
+    }
 }

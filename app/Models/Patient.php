@@ -88,4 +88,14 @@ class Patient extends Model
     {
         return $this->hasMany(TestData::class);
     }
+
+    public function medicineSends(): HasMany
+    {
+        return $this->hasMany(MedicineSend::class);
+    }
+
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(Transfer::class);
+    }
 }

@@ -4,15 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class User extends Model
+class Pharmacy extends Model
 {
     protected $fillable = [
         'name',
+        'phone',
         'username',
-        'password'
-    ];
-
-    protected $hidden = [
-        'password'
+        'password',
+        'enterdata'
     ];
 }
