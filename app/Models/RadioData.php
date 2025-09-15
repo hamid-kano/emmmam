@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RadioData extends Model
 {
+    protected $table = 'radio_datas';
+    
     protected $fillable = [
         'ray_id',
         'patient_id',
