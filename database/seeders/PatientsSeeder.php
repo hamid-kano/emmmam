@@ -30,9 +30,16 @@ class PatientsSeeder extends Seeder
                 'date_of_birth' => fake()->dateTimeBetween('-80 years', '-1 year')->format('Y-m-d'),
                 'address' => $areas[array_rand($areas)] . '، الرقة، سوريا',
                 'phone' => '0943' . rand(100000, 999999),
+                'document_number' => rand(10000000000, 99999999999),
+                'blood_type' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'][rand(0, 7)],
                 'host_idp' => ['Host', 'IDP', 'Non_IDP'][rand(0, 2)],
                 'disability' => rand(0, 1) ? true : false,
-                'referred' => rand(0, 1) ? true : false
+                'disability_type' => rand(0, 1) ? ['حركية', 'بصرية', 'سمعية'][rand(0, 2)] : null,
+                'referred' => rand(0, 1) ? true : false,
+                'additional_notes' => 'ملاحظات عامة',
+                'echo' => rand(0, 1) ? 'طبيعي' : 'غير طبيعي',
+                'z_score' => rand(-3, 3),
+                'mwak' => rand(1, 5)
             ]);
         }
     }

@@ -49,9 +49,9 @@ class PatientReportController extends Controller
                 $patient->address,
                 $patient->disability ? ($patient->disability_type ?: 'يوجد') : 'لا يوجد',
                 $patient->referred ? 'نعم' : 'لا',
-                $patient->phone,
-                $patient->document_number,
-                $patient->blood_type
+                $patient->phone ?: 'لا يوجد',
+                $patient->document_number ?: 'لا يوجد',
+                $patient->blood_type ?: 'غير محدد'
             ], null, 'A' . $row);
             $row++;
         }
@@ -65,44 +65,56 @@ class PatientReportController extends Controller
             $clinicSheet->setTitle($clinic->name);
             $clinicSheet->fromArray($clinicHeaders, null, 'A1');
             
-            $clinicPatients = DiagnosisData::with(['patient.medicineDatas', 'patient.visits', 'patient.radioDatas.radiology', 'patient.testDatas.test', 'diagnosis'])
-                ->where('clinic_id', $clinic->id)
+            $clinicPatients = DiagnosisData::select(
+                    'diagnosis_datas.*',
+                    'patients.*',
+                    'diagnoses.name as diagnosis_name',
+                    'radiologies.name as radiology_name',
+                    'radio_datas.suboption as radio_suboption',
+                    'tests.name as test_name',
+                    'visits.status as visit_status',
+                    'medicine_datas.medicines'
+                )
+                ->join('patients', 'diagnosis_datas.patient_id', '=', 'patients.id')
+                ->join('diagnoses', 'diagnosis_datas.diagnoses_id', '=', 'diagnoses.id')
+                ->leftJoin('radio_datas', 'patients.id', '=', 'radio_datas.patient_id')
+                ->leftJoin('radiologies', 'radio_datas.ray_id', '=', 'radiologies.id')
+                ->leftJoin('test_datas', 'patients.id', '=', 'test_datas.patient_id')
+                ->leftJoin('tests', 'test_datas.test_id', '=', 'tests.id')
+                ->leftJoin('visits', 'patients.id', '=', 'visits.patient_id')
+                ->leftJoin('medicine_datas', 'patients.id', '=', 'medicine_datas.patient_id')
+                ->where('diagnosis_datas.clinic_id', $clinic->id)
                 ->get();
             
             $row = 2;
             foreach ($clinicPatients as $data) {
-                $patient = $data->patient;
-                $age = $patient->age ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->age : 0);
-                $ageMonths = $patient->agemonth ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->diffInMonths(now()) : 0);
-                
-                $medicineData = $patient->medicineDatas->pluck('medicines')->implode(', ');
-                $visit = $patient->visits->first();
-                $radioData = $patient->radioDatas->first();
-                $testData = $patient->testDatas->first();
+                $age = $data->age ?: ($data->date_of_birth ? \Carbon\Carbon::parse($data->date_of_birth)->age : 0);
+                $ageMonths = $data->agemonth ?: ($data->date_of_birth ? \Carbon\Carbon::parse($data->date_of_birth)->diffInMonths(now()) : 0);
+                $fullName = $data->first_name . ' ' . $data->father_name . ' ' . $data->mother_name . ' ' . $data->last_name;
                 
                 $clinicSheet->fromArray([
-                    $patient->patient_code,
-                    $patient->full_name,
-                    $patient->gender == 'male' ? 'ذكر' : 'أنثى',
+                    $data->patient_code,
+                    $fullName,
+                    $data->gender == 'male' ? 'ذكر' : 'أنثى',
                     $age,
                     $ageMonths,
-                    $patient->host_idp == 'IDP' ? 'نازح' : 'مقيم',
-                    $patient->address,
-                    $patient->disability ? ($patient->disability_type ?: 'يوجد') : 'لا يوجد',
-                    $patient->referred ? 'نعم' : 'لا',
-                    $data->diagnosis->name,
-                    $data->suboption,
-                    '',
-                    $radioData ? $radioData->radiology->name : '',
-                    $radioData ? $radioData->suboption : '',
-                    $testData ? $testData->test->name : '',
-                    $medicineData,
-                    $visit ? $visit->status : '',
-                    $visit && $visit->status == 'transferred' ? 'تحويل طبي' : '',
-                    $data->echo ?: $patient->echo,
-                    $data->z_score ?: $patient->z_score,
-                    $data->mwak ?: $patient->mwak,
-                    $patient->additional_notes
+                    $data->host_idp == 'IDP' ? 'نازح' : 'مقيم',
+                    $data->address,
+                    $data->disability ? ($data->disability_type ?: 'يوجد') : 'لا يوجد',
+                    $data->referred ? 'نعم' : 'لا',
+                    $data->diagnosis_name ?: 'لا يوجد',
+                    $data->suboption ?: 'لا يوجد',
+                    'لا يوجد',
+                    $data->radiology_name ?: 'لا يوجد',
+                    $data->radio_suboption ?: 'لا يوجد',
+                    $data->test_name ?: 'لا يوجد',
+                    $data->medicines ?: 'لا يوجد',
+                    $data->visit_status ?: 'مقيم',
+                    $data->visit_status == 'transferred' ? 'تحويل طبي' : 'لا يوجد',
+                    $data->echo ?: 'لا يوجد',
+                    $data->z_score ?: '0',
+                    $data->mwak ?: '0',
+                    $data->additional_notes ?: 'لا يوجد'
                 ], null, 'A' . $row);
                 $row++;
             }
