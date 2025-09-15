@@ -4,7 +4,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Header Section -->
     <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-8 mb-6">
-        <h1 class="text-3xl font-bold text-center">تفاصيل المريض - {{ $patient->name }}</h1>
+        <h1 class="text-3xl font-bold text-center">تفاصيل المريض - {{ $patient->full_name }}</h1>
     </div>
     <!-- Navigation Section -->
     <div class="flex justify-between items-center mb-6">
@@ -30,14 +30,16 @@
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-3">
-                    <p class="text-gray-700"><span class="font-semibold">الاسم:</span> {{ $patient->name }}</p>
+                    <p class="text-gray-700"><span class="font-semibold">كود المريض:</span> {{ $patient->patient_code }}</p>
+                    <p class="text-gray-700"><span class="font-semibold">الاسم الكامل:</span> {{ $patient->full_name }}</p>
                     <p class="text-gray-700"><span class="font-semibold">الهاتف:</span> {{ $patient->phone }}</p>
-                    <p class="text-gray-700"><span class="font-semibold">البريد الإلكتروني:</span> {{ $patient->email ?? 'غير محدد' }}</p>
+                    <p class="text-gray-700"><span class="font-semibold">نازح/مقيم:</span> {{ $patient->host_idp == 'IDP' ? 'نازح' : 'مقيم' }}</p>
                 </div>
                 <div class="space-y-3">
-                    <p class="text-gray-700"><span class="font-semibold">تاريخ الميلاد:</span> {{ $patient->birth_date }}</p>
+                    <p class="text-gray-700"><span class="font-semibold">تاريخ الميلاد:</span> {{ $patient->date_of_birth }}</p>
                     <p class="text-gray-700"><span class="font-semibold">الجنس:</span> {{ $patient->gender == 'male' ? 'ذكر' : 'أنثى' }}</p>
                     <p class="text-gray-700"><span class="font-semibold">العنوان:</span> {{ $patient->address }}</p>
+                    <p class="text-gray-700"><span class="font-semibold">الإعاقة:</span> {{ $patient->disability ? ($patient->disability_type ?: 'يوجد') : 'لا يوجد' }}</p>
                 </div>
             </div>
         </div>
