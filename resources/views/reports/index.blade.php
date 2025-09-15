@@ -1,75 +1,59 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقارير المرضى</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .header-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; }
-    </style>
-</head>
-<body>
-    <div class="header-section">
-        <div class="container">
-            <h1 class="text-center">تقارير المرضى - مشفى الرقة</h1>
-        </div>
+@extends('layouts.app')
+
+@section('content')
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-8 mb-6">
+        <h1 class="text-3xl font-bold text-center">تقارير المرضى - مشفى الرقة</h1>
+    </div>
+    <!-- Content Section -->
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-semibold text-gray-900">قائمة المرضى</h3>
+        <a href="{{ route('reports.export') }}" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center">
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            تصدير إلى Excel
+        </a>
     </div>
 
-    <div class="container mt-4">
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <h3>قائمة المرضى</h3>
-            </div>
-            <div class="col-md-6 text-end">
-                <a href="{{ route('reports.export') }}" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i> تصدير إلى Excel
-                </a>
-            </div>
+    <!-- Table Section -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">كود المريض</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الاسم الكامل</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الجنس</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العمر</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العنوان</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عدد التشخيصات</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($patients as $patient)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $patient->id }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->gender == 'male' ? 'ذكر' : 'أنثى' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->age : 0 }} سنة</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->address }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->diagnosisDatas->count() }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{{ route('reports.show', $patient) }}" class="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded text-sm transition duration-200">عرض التفاصيل</a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>كود المريض</th>
-                                <th>الاسم الكامل</th>
-                                <th>الجنس</th>
-                                <th>العمر</th>
-                                <th>العنوان</th>
-                                <th>عدد التشخيصات</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($patients as $patient)
-                            <tr>
-                                <td>{{ $patient->id }}</td>
-                                <td>{{ $patient->name }}</td>
-                                <td>{{ $patient->gender == 'male' ? 'ذكر' : 'أنثى' }}</td>
-                                <td>{{ $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->age : 0 }} سنة</td>
-                                <td>{{ $patient->address }}</td>
-                                <td>{{ $patient->diagnosisDatas->count() }}</td>
-                                <td>
-                                    <a href="{{ route('reports.show', $patient) }}" class="btn btn-sm btn-primary">عرض التفاصيل</a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="d-flex justify-content-center">
-                    {{ $patients->links() }}
-                </div>
-            </div>
+        
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-gray-200">
+            {{ $patients->links() }}
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-</body>
-</html>
+</div>
+@endsection
