@@ -14,7 +14,7 @@ class VisitSeeder extends Seeder
         $statuses = ['admitted', 'discharged', 'transferred', 'deceased'];
         $dataEntryNames = ['د. أحمد محمد', 'د. فاطمة حسن', 'د. محمد علي'];
 
-        foreach ($patients->take(20) as $patient) {
+        foreach ($patients->take(30) as $patient) {
             Visit::create([
                 'patient_id' => $patient->id,
                 'namedataentry' => $dataEntryNames[array_rand($dataEntryNames)],

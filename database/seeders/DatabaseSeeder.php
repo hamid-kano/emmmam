@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             CardsSeeder::class,
             DiagnosisDataSeeder::class,
             MedicineDataSeeder::class,
+            RadioDataSeeder::class,
+            TestDataSeeder::class,
             VisitSeeder::class,
             BackupsSeeder::class,
         ]);
