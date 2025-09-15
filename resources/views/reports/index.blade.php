@@ -35,10 +35,10 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($patients as $patient)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $patient->id }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $patient->patient_code }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->full_name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->gender == 'male' ? 'ذكر' : 'أنثى' }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->age : 0 }} سنة</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->age ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->age : 0) }} سنة</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->address }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->diagnosisDatas->count() }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

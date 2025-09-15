@@ -33,38 +33,41 @@ class PatientReportController extends Controller
         $headers = ['كود المريض', 'الاسم الكامل', 'الجنس', 'العمر(بالسنوات)', 'العمر(الاشهر)', 'نازح/مقيم', 'العنوان', 'الاعاقة', 'إحالة من منشأة أخرى؟', 'التصنيف الرئيسي للأمراض', 'التشخيص', 'اذا أخرى, الرجاء التحديد؟', 'نوع الأشعة', 'النوع', 'نوع التحاليل المخبرية', 'الأدوية', 'حالة التخريج', 'إذا أحيل أو توفى فما السبب؟', 'إيكو', 'قياس زد سكور', 'قياس مواك', 'ملاحظات'];
         $sheet->fromArray($headers, null, 'A1');
         
-        $patients = Patient::with(['diagnosisDatas.clinic', 'diagnosisDatas.diagnosis', 'medicineDatas'])->get();
+        $patients = Patient::with(['diagnosisDatas.clinic', 'diagnosisDatas.diagnosis', 'medicineDatas', 'visits', 'radioDatas.radiology', 'testDatas.test'])->get();
         $row = 2;
         foreach ($patients as $patient) {
-            $age = $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->age : 0;
-            $ageMonths = $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->diffInMonths(now()) : 0;
+            $age = $patient->age ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->age : 0);
+            $ageMonths = $patient->agemonth ?: ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->diffInMonths(now()) : 0);
             
             $diagnosisData = $patient->diagnosisDatas->first();
             $medicineData = $patient->medicineDatas->pluck('medicines')->implode(', ');
+            $visit = $patient->visits->first();
+            $radioData = $patient->radioDatas->first();
+            $testData = $patient->testDatas->first();
             
             $sheet->fromArray([
-                $patient->id,
-                $patient->name,
+                $patient->patient_code,
+                $patient->full_name,
                 $patient->gender == 'male' ? 'ذكر' : 'أنثى',
                 $age,
                 $ageMonths,
-                'مقيم',
+                $patient->host_idp == 'IDP' ? 'نازح' : 'مقيم',
                 $patient->address,
-                'لا يوجد',
-                'لا',
+                $patient->disability ? ($patient->disability_type ?: 'يوجد') : 'لا يوجد',
+                $patient->referred ? 'نعم' : 'لا',
                 $diagnosisData ? $diagnosisData->diagnosis->name : '',
                 $diagnosisData ? $diagnosisData->suboption : '',
                 '',
+                $radioData ? $radioData->radiology->name : '',
                 '',
-                '',
-                '',
+                $testData ? $testData->test->name : '',
                 $medicineData,
+                $visit ? $visit->status : '',
                 '',
-                '',
-                $diagnosisData ? $diagnosisData->echo : '',
-                $diagnosisData ? $diagnosisData->z_score : '',
-                $diagnosisData ? $diagnosisData->mwak : '',
-                ''
+                $patient->echo ?: ($diagnosisData ? $diagnosisData->echo : ''),
+                $patient->z_score ?: ($diagnosisData ? $diagnosisData->z_score : ''),
+                $patient->mwak ?: ($diagnosisData ? $diagnosisData->mwak : ''),
+                $patient->additional_notes
             ], null, 'A' . $row);
             $row++;
         }
@@ -87,15 +90,15 @@ class PatientReportController extends Controller
                 $ageMonths = $patient->birth_date ? \Carbon\Carbon::parse($patient->birth_date)->diffInMonths(now()) : 0;
                 
                 $clinicSheet->fromArray([
-                    $patient->id,
-                    $patient->name,
+                    $patient->patient_code,
+                    $patient->full_name,
                     $patient->gender == 'male' ? 'ذكر' : 'أنثى',
                     $age,
                     $ageMonths,
-                    'مقيم',
+                    $patient->host_idp == 'IDP' ? 'نازح' : 'مقيم',
                     $patient->address,
-                    'لا يوجد',
-                    'لا',
+                    $patient->disability ? ($patient->disability_type ?: 'يوجد') : 'لا يوجد',
+                    $patient->referred ? 'نعم' : 'لا',
                     $data->diagnosis->name,
                     $data->suboption,
                     '',
@@ -108,7 +111,7 @@ class PatientReportController extends Controller
                     $data->echo,
                     $data->z_score,
                     $data->mwak,
-                    ''
+                    $patient->additional_notes
                 ], null, 'A' . $row);
                 $row++;
             }
